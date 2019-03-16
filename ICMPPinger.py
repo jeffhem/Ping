@@ -69,6 +69,9 @@ def receiveOnePing(mySocket, ID, timeout, destAddr):
 		resType, code, checksum, Id, sequence = struct.unpack("bbHHh", icmp)
 		# print("Type: %s, Code: %s, Checksum: %s, Id: %s, Sequence: %s" % (resType, code, checksum, ID, sequence))
 		if Id == ID:
+			if resType == 3:
+				return "Destination Unreachable: code %s" % code
+
 			lastIndexOfd = 28 + struct.calcsize('d');
 			timeSent = struct.unpack('d', recPacket[28:lastIndexOfd])[0];
 			rtt = float("{:.4f}".format((timeReceived - timeSent) * 1000))
@@ -76,7 +79,6 @@ def receiveOnePing(mySocket, ID, timeout, destAddr):
 			global packetRecv
 			packetRecv += 1
 			return "Pong %s: %s ms" % (addr[0], rtt)
-
 		#Fill in end
 
 		timeLeft = timeLeft - howLongInSelect
@@ -141,5 +143,5 @@ def ping(host, locate='', timeout=1):
 	print("")
 	return delay
 
-ping(sAmerica, 'south America')
+ping(asia, 'Asia')
 
