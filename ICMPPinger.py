@@ -9,8 +9,8 @@ import signal
 
 ICMP_ECHO_REQUEST = 8
 rttList = []
-packetSent = 0
-packetRecv = 0
+packetSent = 0.0
+packetRecv = 0.0
 location = ''
 
 # server IPs on different continents
@@ -21,7 +21,7 @@ asia = '52.94.8.34'
 
 # print summaries after termination
 def signal_handler(sig, frame):
-	packetAvg = "{:.1%}".format((packetSent - packetRecv) / packetSent)
+	packetAvg = "{0:.1%}".format((packetSent - packetRecv) / packetSent)
 	rttAvg = len(rttList) > 0 and sum(rttList)/len(rttList)
 	print("")
 	print('--- %s ping statistics ---' % location)
@@ -65,12 +65,12 @@ def receiveOnePing(mySocket, ID, timeout, destAddr):
 		timeReceived = time.time()
 		recPacket, addr = mySocket.recvfrom(1024)
 		#Fill in start
-		icmp = recPacket[20:28];
-		resType, code, checksum, Id, sequence = struct.unpack("bbHHh", icmp)
+		icmp = recPacket[20:28]
+		resType, code, myChecksum, Id, sequence = struct.unpack("bbHHh", icmp)
 		# print("Type: %s, Code: %s, Checksum: %s, Id: %s, Sequence: %s" % (resType, code, checksum, ID, sequence))
 		if Id == ID:
-			if resType == 3:
-				return "Destination Unreachable: code %s" % code
+			if resType == 3 and code >= 0 and code < 16:
+				return "Destination Unreachable with code: %s" % code
 
 			lastIndexOfd = 28 + struct.calcsize('d');
 			timeSent = struct.unpack('d', recPacket[28:lastIndexOfd])[0];
@@ -139,9 +139,13 @@ def ping(host, locate='', timeout=1):
 	while 1 :
 		delay = doOnePing(dest, timeout)
 		print(delay)
-		time.sleep(1)# one second
+		time.sleep(timeout)# one second
 	print("")
 	return delay
 
-ping(asia, 'Asia')
+# ping four IPs in 4 different continents
+ping(sAmerica, 'South America')
+#ping(nAmerica, 'North America')
+#ping(europe, 'Europe')
+#ping(asia, 'Asia')
 
